@@ -63,6 +63,33 @@ jobs:
           fi
           echo "Table 'visits' with columns 'id', 'ip_address' and 'created_at' exists!"
 
+      - name: Test Redis caching behavior
+        run: |
+          first=$(curl -s http://localhost/visits)
+          cached=$(docker compose exec -T redis redis-cli GET nvisits || true)
+          if [[ -z "$cached" ]]; then
+            echo "Cache not populated after first /visits"
+            exit 1
+          fi
+          echo "Redis cache populated"
+
+          second=$(curl -s http://localhost/visits)
+          if [[ "$first" != "$second" ]]; then
+            echo "Cache miss: expected $first, got $second"
+            exit 1
+          fi
+          echo "Cache hit is correct"
+
+          curl -s http://localhost/ping > /dev/null
+          sleep 1
+
+          after_ping=$(docker compose exec -T redis redis-cli GET nvisits || true)
+          if [[ -n "$after_ping" ]]; then
+            echo "Cache should be invalidated, but found: $after_ping"
+            exit 1
+          fi
+          echo "Redis cache invalidated after /ping"
+
       - name: Show logs on failure
         if: failure()
         run: docker compose logs

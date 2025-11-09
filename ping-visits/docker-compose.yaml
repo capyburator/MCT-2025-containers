@@ -18,16 +18,29 @@ services:
       timeout: 10s
       retries: 3
 
+  redis:
+    image: redis:8-alpine
+    container_name: pingvisits_redis
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   app:
     build: .
     container_name: pingvisits_app
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "80:80"
     environment:
       - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - REDIS_URL=redis://redis:6379
     restart: always
 
 volumes:

@@ -71,10 +71,35 @@ else
   echo "✅ Test web respone passed"
 fi
 
-echo "Test PostgreSQL connection..."
-docker compose exec -T db pg_isready -U "${DB_USER}" -d "${DB_NAME}"
+echo "Testing Redis cache..."
+first=$(curl -s http://localhost/visits)
+cached=$(docker compose exec -T redis redis-cli GET nvisits || true)
+if [[ -z "$cached" ]]; then
+  echo "❌ Redis cache not populated after first /visits"
+  docker compose logs
+  exit 1
+fi
+echo "✅ Redis cache populated: $cached"
 
-echo "✅ PostgreSQL is accepting connections"
+second=$(curl -s http://localhost/visits)
+if [[ "$first" != "$second" ]]; then
+  echo "❌ Cache miss: expected $first, got $second"
+  docker compose logs
+  exit 1
+fi
+echo "✅ Cache hit is correct"
+
+curl -s http://localhost/ping > /dev/null
+sleep 1
+
+echo "Checking Redis cache invalidation..."
+after_ping=$(docker compose exec -T redis redis-cli GET nvisits || true)
+if [[ -n "$after_ping" ]]; then
+  echo "❌ Cache should be invalidated, but found: $after_ping"
+  docker compose logs
+  exit 1
+fi
+echo "✅ Redis cache invalidated successfully."
 
 echo "🧹 Stopping and cleaning up containers..."
 docker compose down -v
