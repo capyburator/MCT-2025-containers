@@ -60,7 +60,7 @@ async fn test_redis_cache_cycle() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_visits_increment_after_pings() -> anyhow::Result<()> {
-    const BASE_URL: &str = "http://localhost";
+    const BASE_URL: &str = "http://localhost:8080";
 
     std::thread::spawn(|| {
         let sys = actix_web::rt::System::new();

@@ -118,9 +118,11 @@ pub async fn index() -> impl Responder {
 }
 
 pub async fn run_server() -> anyhow::Result<()> {
+    const PORT: u16 = 8080;
+
     let state = web::Data::new(AppState::from_env().await?);
 
-    let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 80));
+    let addr = std::net::SocketAddr::from(([0, 0, 0, 0], PORT));
     println!("HTTP server listens on {addr}");
 
     Ok(HttpServer::new(move || {

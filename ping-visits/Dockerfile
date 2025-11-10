@@ -9,5 +9,5 @@ RUN cargo b -r --target x86_64-unknown-linux-musl
 # Create a new stage with minimal image
 FROM scratch
 COPY --from=builder /ping-visits/target/x86_64-unknown-linux-musl/release/ping-visits /ping-visits
-EXPOSE 80
+EXPOSE 8080
 ENTRYPOINT ["/ping-visits"]

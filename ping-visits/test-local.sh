@@ -18,7 +18,7 @@ fi
 : "${DB_PASSWORD:?Environment variable DB_PASSWORD not set}"
 : "${DB_NAME:?Environment variable DB_NAME not set}"
 
-PORT=80
+PORT=8080
 URL="http://localhost:${PORT}"
 
 echo "🧹 Cleaning up old containers..."
@@ -72,7 +72,7 @@ else
 fi
 
 echo "Testing Redis cache..."
-first=$(curl -s http://localhost/visits)
+first=$(curl -s ${URL}/visits)
 cached=$(docker compose exec -T redis redis-cli GET nvisits || true)
 if [[ -z "$cached" ]]; then
   echo "❌ Redis cache not populated after first /visits"
@@ -81,7 +81,7 @@ if [[ -z "$cached" ]]; then
 fi
 echo "✅ Redis cache populated: $cached"
 
-second=$(curl -s http://localhost/visits)
+second=$(curl -s ${URL}/visits)
 if [[ "$first" != "$second" ]]; then
   echo "❌ Cache miss: expected $first, got $second"
   docker compose logs
@@ -89,7 +89,7 @@ if [[ "$first" != "$second" ]]; then
 fi
 echo "✅ Cache hit is correct"
 
-curl -s http://localhost/ping > /dev/null
+curl -s ${URL}/ping > /dev/null
 sleep 1
 
 echo "Checking Redis cache invalidation..."
