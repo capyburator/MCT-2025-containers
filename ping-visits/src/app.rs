@@ -106,6 +106,10 @@ pub async fn ping(state: web::Data<AppState>, req: HttpRequest) -> HttpResponse 
 }
 
 pub async fn visits(state: web::Data<AppState>) -> HttpResponse {
+    if env::var("DEV").is_ok() {
+        return HttpResponse::Ok().body("-1");
+    }
+
     if let Some(cached_count) = state.redis_get().await {
         HttpResponse::Ok().body(cached_count.to_string())
     } else {

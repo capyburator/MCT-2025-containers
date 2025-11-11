@@ -95,6 +95,43 @@ jobs:
         if: failure()
         run: docker compose logs
 
+  test-compose-dev:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ping-visits
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start services
+        run: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+      - name: Wait for web to be ready
+        run: |
+          timeout=60
+          while ! curl -f http://localhost:8080 >/dev/null 2>&1; do
+            ((timeout--))
+            if [ $timeout -eq 0 ]; then
+              echo "Web service failed to start"
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Test /visits in dev mode
+        run: |
+          response=$(curl -s http://localhost:8080/visits)
+          if [[ "$response" != "-1" ]]; then
+            echo "Dev mode test failed: expected -1, got $response"
+            exit 1
+          fi
+          echo "Dev mode test passed"
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
   test-coverage:
     runs-on: ubuntu-latest
 
@@ -112,7 +149,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U docker -d pingvisits"
+          --health-cmd "pg_isready -U ${DB_USER} -d ${DB_NAME}"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -170,4 +207,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: tarpaulin-report.html
+          path: /home/runner/work/MCT-2025-containers/MCT-2025-containers/ping-visits/tarpaulin-report.html
