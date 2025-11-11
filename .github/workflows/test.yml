@@ -170,4 +170,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: target/tarpaulin-report.html
+          path: tarpaulin-report.html
