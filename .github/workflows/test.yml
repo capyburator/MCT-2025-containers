@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: docker
+      DB_PASSWORD: docker
+      DB_NAME: pingvisits
 
     defaults:
       run:
@@ -140,9 +140,9 @@ jobs:
       db:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: ${{ secrets.DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.DB_NAME }}
+          POSTGRES_USER: docker
+          POSTGRES_PASSWORD: docker
+          POSTGRES_DB: pingvisits
         ports:
           - 5432:5432
         options: >-
@@ -162,7 +162,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@localhost:5432/${{ secrets.DB_NAME }}
+      DATABASE_URL: postgres://docker:docker@localhost:5432/pingvisits
       REDIS_URL: redis://localhost:6379
       RUST_BACKTRACE: 1
 
